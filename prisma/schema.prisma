@@ -1,0 +1,95 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Employee {
+  id                       Int      @id @default(autoincrement())
+  employeeNumber           Int      @unique
+  age                      Int
+  attrition                String
+  businessTravel           String
+  dailyRate                Int
+  department               String
+  distanceFromHome         Int
+  education                Int
+  educationField           String
+  environmentSatisfaction  Int
+  gender                   String
+  hourlyRate               Int
+  jobInvolvement           Int
+  jobLevel                 Int
+  jobRole                  String
+  jobSatisfaction          Int
+  maritalStatus            String
+  monthlyIncome            Int
+  monthlyRate              Int
+  numCompaniesWorked       Int
+  over18                   String
+  overTime                 String
+  percentSalaryHike        Int
+  performanceRating        Int
+  relationshipSatisfaction Int
+  standardHours            Int
+  stockOptionLevel         Int
+  totalWorkingYears        Int
+  trainingTimesLastYear    Int
+  workLifeBalance          Int
+  yearsAtCompany           Int
+  yearsInCurrentRole       Int
+  yearsSinceLastPromotion  Int
+  yearsWithCurrManager     Int
+
+  isActive             Boolean  @default(true)
+  attritionProbability Float?
+  predictedAttrition   Boolean?
+  riskScore            Int?
+  riskLevel            String?
+  topRiskFactors       String?
+  modelVersion         String?
+  scoredAt             DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([isActive])
+  @@index([department])
+  @@index([riskLevel])
+}
+
+model RiskConfig {
+  id                 Int      @id @default(1)
+  mediumRiskThreshold Int     @default(35)
+  highRiskThreshold   Int     @default(60)
+  criticalRiskThreshold Int   @default(80)
+  activeModelVersion  String?
+  updatedAt           DateTime @updatedAt
+}
+
+model ModelRun {
+  id           Int      @id @default(autoincrement())
+  modelVersion String
+  algorithm    String
+  rocAuc       Float
+  prAuc        Float
+  precision    Float
+  recall       Float
+  f1           Float
+  accuracy     Float
+  threshold    Float
+  trainedAt    DateTime
+  notes        String?
+}
