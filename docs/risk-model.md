@@ -70,8 +70,8 @@ Threshold de 0.58 escolhido por maximizar F1 no holdout. Isso prioriza **recall 
 
 ## Explicabilidade
 
-- **Global**: coeficientes da regressão sinalizam quais features mais empurram a probabilidade de saída para cima ou para baixo (ex.: `OverTime=Yes`, `MaritalStatus=Single`).
-- **Local**: por profissional, a contribuição = `valor_transformado × coeficiente`. Os fatores positivos de maior magnitude formam o `topRiskFactors` exibido na tela de detalhe.
+- **Global**: importância média por feature com gráficos SHAP nativos (`analysis/reports/shap_summary_bar_v1.png` e `analysis/reports/shap_beeswarm_v1.png`).
+- **Local**: por profissional, os SHAP values de maior impacto compõem o `topRiskFactors` exibido na tela de detalhe, incluindo direção (`aumenta`/`reduz`) e magnitude.
 
 ## Limitações
 

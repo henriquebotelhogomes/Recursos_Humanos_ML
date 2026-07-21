@@ -19,7 +19,7 @@ analysis/hr_analytics/
 ├── features.py          # split_features_target, build_preprocessor
 ├── train.py             # build_models + select_best_model
 ├── evaluate.py          # choose_threshold + evaluate
-└── score.py             # build_explainer + top_risk_factors (fatores locais)
+└── score.py             # explicações SHAP + top_risk_factors (fatores locais)
 ```
 
 Scripts CLI em `analysis/scripts/`:
@@ -94,24 +94,26 @@ Threshold: `choose_threshold` varre valores de 0.1 a 0.9 e escolhe o que **maxim
 
 ### 7. Explicabilidade local (`score.py`)
 
-Para popular o campo `topRiskFactors` de cada profissional, um modelo **Logistic Regression** é ajustado sobre a base inteira como *surrogate* interpretável. Para cada linha:
+As explicações são calculadas com **SHAP nativo** sobre o pipeline final treinado:
 
+- `shap.LinearExplainer` quando o modelo selecionado é `LogisticRegression`
+- `shap.TreeExplainer` quando o modelo selecionado é `GradientBoostingClassifier`
+
+Para cada profissional, extraímos os SHAP values de maior magnitude e geramos `topRiskFactors` em formato:
+
+```json
+[{"feature": "Faz horas extras", "impact": 0.2314, "direction": "aumenta"}]
 ```
-contribuição_i = valor_transformado_i × coeficiente_i
-```
 
-Os fatores com maior contribuição positiva formam o "top N". Isso é conceitualmente **equivalente ao SHAP para modelos lineares**, sem depender do pacote `shap`.
-
-Rótulos exibidos são amigáveis (pt-BR), definidos em `FEATURE_LABELS` (ex.: `OverTime_Yes` → "Faz horas extras").
-
-!!! note "Trocando por SHAP"
-    Se preferir `shap.LinearExplainer` (ou `TreeExplainer` para gradient boosting), a mudança é local em `score.py`. Estruturamos os fatores em uma lista de `{feature, impact, direction}` para tornar essa troca transparente ao restante do sistema.
+Rótulos exibidos são amigáveis (pt-BR), definidos em `FEATURE_LABELS`.
 
 ### 8. Artefatos
 
 - `analysis/models/model_v1.joblib` — pipeline completo (`joblib.dump`).
 - `analysis/models/metrics_v1.json` — métricas + metadados (`modelVersion`, `algorithm`, `trainedAt`, `threshold`, ...).
 - `data/predictions.csv` — colunas `EmployeeNumber`, `attritionProbability`, `predictedAttrition`, `modelVersion`, `topRiskFactors` (JSON).
+- `analysis/reports/shap_summary_bar_v1.png` — importância global média (bar plot).
+- `analysis/reports/shap_beeswarm_v1.png` — distribuição de impacto por feature (beeswarm).
 
 ## Prevenção de data leakage
 

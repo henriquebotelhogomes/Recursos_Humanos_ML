@@ -6,7 +6,7 @@ Guia rápido para rodar o PeopleRisk localmente.
 
 - **Node.js 20+** e **npm**
 - **Python 3.11+**
-- Pacotes Python: `pandas`, `numpy`, `scikit-learn`, `joblib`
+- Pacotes Python: `pandas`, `numpy`, `scikit-learn`, `shap`, `matplotlib`, `joblib`
 
 ## Instalação
 

@@ -108,6 +108,7 @@ Duas camadas separadas, comunicando-se via arquivo:
 - Python 3.12
 - pandas, numpy
 - scikit-learn (Pipeline, ColumnTransformer, LogisticRegression, GradientBoostingClassifier, StratifiedKFold, GridSearch/CV, métricas)
+- shap (LinearExplainer/TreeExplainer) + matplotlib (gráficos SHAP)
 - joblib (serialização)
 
 **Qualidade e docs**
@@ -154,11 +155,11 @@ Duas camadas separadas, comunicando-se via arquivo:
    - Escolha do **threshold** de decisão maximizando F1 no holdout
 
 5. **Explicabilidade local** (`score.py`)  
-   Para o campo `topRiskFactors` de cada profissional, calculamos a contribuição por feature usando um modelo linear (`LogisticRegression`) ajustado sobre toda a base como *surrogate*: `contribuição = valor_transformado × coeficiente`. Os fatores positivos de maior magnitude formam o "top N" que aparece no detalhe do profissional. Isso é **conceitualmente equivalente ao SHAP linear** e mantém o pipeline enxuto (a instrução previa SHAP; se preferir o pacote `shap`, é uma troca localizada nesse módulo).
+   O pipeline final gera explicações nativas com **SHAP**: `shap.LinearExplainer` para `LogisticRegression` e `shap.TreeExplainer` para `GradientBoosting`. Para cada profissional, os SHAP values mais relevantes formam o `topRiskFactors` exibido no detalhe, com direção de impacto (`aumenta`/`reduz`).
 
 6. **Scoring e persistência** (`scripts/generate_predictions.py`)  
    Gera `data/predictions.csv` com colunas: `EmployeeNumber`, `attritionProbability`, `predictedAttrition`, `modelVersion`, `topRiskFactors` (JSON).  
-   Salva também `analysis/models/model_v1.joblib` e `analysis/models/metrics_v1.json` (métricas + metadados).
+   Salva também `analysis/models/model_v1.joblib`, `analysis/models/metrics_v1.json` (métricas + metadados) e gráficos SHAP em `analysis/reports/`.
 
 ### Resultados do modelo v1
 
@@ -218,7 +219,7 @@ O `data/Human_Resources.csv` (fonte fixa do projeto, também presente na raiz co
 
 - **Node.js 20+** e **npm**
 - **Python 3.11+**
-- Pacotes Python: `pandas`, `numpy`, `scikit-learn`, `joblib`
+- Pacotes Python: `pandas`, `numpy`, `scikit-learn`, `shap`, `matplotlib`, `joblib`
 
 ### Passo a passo
 
@@ -417,7 +418,7 @@ Recursos_Humanos/
 
 - **CI/CD** com GitHub Actions implementado (`.github/workflows/ci.yml`) com lint, testes e build em push/PR.
 - Cobertura E2E (Playwright) e cenários de autenticação completos implementados.
-- Troca do explicador linear por `shap.LinearExplainer` / `shap.TreeExplainer` para gráficos SHAP nativos.
+- Explicabilidade com SHAP nativo (`shap.LinearExplainer` / `shap.TreeExplainer`) e geração de gráficos implementada.
 - Serviço de inferência online (FastAPI) e re-treino agendado.
 
 ---

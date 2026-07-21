@@ -25,13 +25,18 @@ from analysis.hr_analytics import MODEL_VERSION, RANDOM_STATE
 from analysis.hr_analytics.evaluate import choose_threshold, evaluate
 from analysis.hr_analytics.features import split_features_target
 from analysis.hr_analytics.loading import clean_dataset, load_dataset
-from analysis.hr_analytics.score import build_explainer, top_risk_factors
+from analysis.hr_analytics.score import (
+    explain_with_shap,
+    save_shap_reports,
+    top_risk_factors_from_shap,
+)
 from analysis.hr_analytics.train import select_best_model
 
 ROOT = Path(__file__).resolve().parents[2]
 DATA_CSV = ROOT / "data" / "Human_Resources.csv"
 PREDICTIONS_CSV = ROOT / "data" / "predictions.csv"
 MODELS_DIR = ROOT / "analysis" / "models"
+REPORTS_DIR = ROOT / "analysis" / "reports"
 
 
 def main() -> None:
@@ -65,9 +70,19 @@ def main() -> None:
         )
     )
 
-    print(">> Ajustando explicador (fatores locais) em toda a base...")
-    explainer, feature_names = build_explainer(x, y)
-    factors = top_risk_factors(explainer, feature_names, x)
+    print(">> Calculando SHAP (fatores locais) em toda a base...")
+    shap_values, feature_names, transformed_df = explain_with_shap(best_pipe, x)
+    factors = top_risk_factors_from_shap(shap_values, feature_names)
+
+    REPORTS_DIR.mkdir(parents=True, exist_ok=True)
+    bar_path, beeswarm_path = save_shap_reports(
+        shap_values=shap_values,
+        transformed_df=transformed_df,
+        reports_dir=str(REPORTS_DIR),
+        model_version=MODEL_VERSION,
+    )
+    print("   SHAP summary (bar):", bar_path)
+    print("   SHAP summary (beeswarm):", beeswarm_path)
 
     print(">> Gerando predições para todos os profissionais...")
     proba_all = best_pipe.predict_proba(x)[:, 1]
