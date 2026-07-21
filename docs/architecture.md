@@ -2,7 +2,7 @@
 
 ## Visão geral
 
-O sistema é dividido em **duas camadas separadas**, comunicando-se por arquivo (batch scoring):
+O sistema é dividido em duas camadas principais, com batch scoring e opção de inferência online:
 
 ```
 ┌──────────────────────────┐              ┌────────────────────────────┐
@@ -18,13 +18,15 @@ O sistema é dividido em **duas camadas separadas**, comunicando-se por arquivo 
                                           └────────────────────────────┘
 ```
 
-### Por que batch?
+### Batch + inferência online
 
-- **Independência de runtime**: o app roda sem depender de Python em produção.
+- **Batch por padrão**: mantém reprodutibilidade e simplicidade operacional.
+- **Inferência online opcional**: FastAPI embutido na mesma imagem Docker para scoring em tempo real.
 - **Reprodutibilidade**: o snapshot de predições é versionável (`predictions.csv`).
-- **Simplicidade**: sem serviço de inferência para operar.
 
-Se você precisar de inferência online no futuro, basta adicionar um microserviço FastAPI que carrega o `.joblib` e responde `/predict`.
+Quando `USE_ONLINE_INFERENCE=true`, o Next.js consulta o serviço FastAPI (`/predict/batch`) para recalcular risco em tempo real nas respostas da API.
+
+No Docker, Next.js (porta 3000) e FastAPI (porta 8000) sobem juntos no mesmo container.
 
 ## Camadas do app
 

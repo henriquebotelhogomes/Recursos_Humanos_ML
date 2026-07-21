@@ -13,3 +13,7 @@ services:
         generateValue: true
       - key: DATABASE_URL
         value: file:./prisma/dev.db
+      - key: INFERENCE_BASE_URL
+        value: http://127.0.0.1:8000
+      - key: USE_ONLINE_INFERENCE
+        value: "false"

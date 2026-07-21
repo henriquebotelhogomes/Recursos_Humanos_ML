@@ -1,0 +1,39 @@
+name: Retrain ML
+
+on:
+  schedule:
+    - cron: "0 3 * * 1"
+  workflow_dispatch:
+
+jobs:
+  retrain:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r analysis/requirements.txt pytest ruff
+
+      - name: Retrain and generate predictions
+        run: python -m analysis.scripts.generate_predictions
+
+      - name: Run Python tests
+        run: python -m pytest analysis/tests
+
+      - name: Upload model artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: retrain-artifacts
+          path: |
+            analysis/models
+            analysis/reports
+            data/predictions.csv

@@ -103,6 +103,7 @@ Duas camadas separadas, comunicando-se via arquivo:
 - [Zod](https://zod.dev/) (validação), [Recharts](https://recharts.org/) (gráficos)
 - [PapaParse](https://www.papaparse.com/) (leitura de CSV no seed)
 - Lucide Icons, `clsx`, `tailwind-merge`
+- FastAPI (serviço de inferência online embutido no mesmo container)
 
 **Machine Learning**
 - Python 3.12
@@ -264,6 +265,28 @@ NEXTAUTH_URL="http://localhost:3000"
 | `docker build -t people-risk .`                           | Build da imagem Docker                                       |
 | `docker run -p 3000:3000 people-risk`                      | Executa o container localmente                               |
 
+### Inferência online (FastAPI)
+
+- Endpoints:
+  - `GET /health`
+  - `GET /model-info`
+  - `POST /predict`
+  - `POST /predict/batch`
+- O app Next.js pode consumir inferência online quando `USE_ONLINE_INFERENCE=true`.
+- Em Docker, Next.js (porta 3000) e FastAPI (porta 8000) sobem juntos na mesma imagem.
+
+Variáveis úteis:
+
+```
+USE_ONLINE_INFERENCE=false
+INFERENCE_BASE_URL=http://127.0.0.1:8000
+INFERENCE_API_KEY=
+MODEL_PATH=analysis/models/model_v1.joblib
+RISK_THRESHOLD_MEDIUM=35
+RISK_THRESHOLD_HIGH=60
+RISK_THRESHOLD_CRITICAL=80
+```
+
 ### Rotas de API
 
 | Rota                          | Método | Descrição                                           |
@@ -419,7 +442,7 @@ Recursos_Humanos/
 - **CI/CD** com GitHub Actions implementado (`.github/workflows/ci.yml`) com lint, testes e build em push/PR.
 - Cobertura E2E (Playwright) e cenários de autenticação completos implementados.
 - Explicabilidade com SHAP nativo (`shap.LinearExplainer` / `shap.TreeExplainer`) e geração de gráficos implementada.
-- Serviço de inferência online (FastAPI) e re-treino agendado.
+- Serviço de inferência online (FastAPI) e re-treino agendado implementados.
 
 ---
 
