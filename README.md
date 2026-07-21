@@ -218,7 +218,7 @@ O `data/Human_Resources.csv` (fonte fixa do projeto, também presente na raiz co
 
 ### Pré-requisitos
 
-- **Node.js 20+** e **npm**
+- **Node.js 24+** e **npm**
 - **Python 3.11+**
 - Pacotes Python: `pandas`, `numpy`, `scikit-learn`, `shap`, `matplotlib`, `joblib`
 
