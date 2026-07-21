@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Protocol, cast
+
 import numpy as np
 import pandas as pd
 from sklearn.ensemble import GradientBoostingClassifier
@@ -41,6 +43,19 @@ FEATURE_LABELS: dict[str, str] = {
 }
 
 
+class _HasToArray(Protocol):
+    def toarray(self) -> np.ndarray: ...
+
+
+class _HasValues(Protocol):
+    @property
+    def values(self) -> object: ...
+
+
+class _HasShapValues(Protocol):
+    def shap_values(self, x: np.ndarray) -> object: ...
+
+
 def _clean_feature_name(raw: str) -> str:
     label = FEATURE_LABELS.get(raw)
     if label:
@@ -52,7 +67,7 @@ def _clean_feature_name(raw: str) -> str:
 
 def _to_dense_matrix(values: object) -> np.ndarray:
     if hasattr(values, "toarray"):
-        return values.toarray()
+        return cast(_HasToArray, values).toarray()
     return np.asarray(values)
 
 
@@ -63,7 +78,7 @@ def _normalize_shap_values(raw: object) -> np.ndarray:
         raw = raw[-1]
 
     if hasattr(raw, "values") and not isinstance(raw, np.ndarray):
-        raw = raw.values
+        raw = cast(_HasValues, raw).values
 
     arr = np.asarray(raw)
 
@@ -101,7 +116,9 @@ def explain_with_shap(
     feature_names = list(pre.get_feature_names_out())
 
     explainer = _build_shap_explainer(clf, transformed)
-    shap_values = _normalize_shap_values(explainer.shap_values(transformed))
+    shap_values = _normalize_shap_values(
+        cast(_HasShapValues, explainer).shap_values(transformed)
+    )
 
     transformed_df = pd.DataFrame(
         transformed,
