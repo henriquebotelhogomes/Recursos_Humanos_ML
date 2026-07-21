@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: people-risk
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NEXTAUTH_URL
+        value: https://people-risk.onrender.com
+      - key: NEXTAUTH_SECRET
+        generateValue: true
+      - key: DATABASE_URL
+        value: file:./prisma/dev.db

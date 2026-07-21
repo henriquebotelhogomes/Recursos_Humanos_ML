@@ -68,75 +68,81 @@ async function main() {
   });
   console.log("   Usuário demo criado (demo123 / demo123)");
 
-  // Employees
+  // Employees — só recarrega se estiver vazio
   if (!fs.existsSync(HR_CSV)) {
     throw new Error(`CSV não encontrado: ${HR_CSV}`);
   }
-  const csvRaw = fs.readFileSync(HR_CSV, "utf-8");
-  const csv = Papa.parse<Record<string, string>>(csvRaw, { header: true, skipEmptyLines: true });
-  const predictions = loadPredictions();
 
-  console.log(`   ${csv.data.length} registros no CSV`);
-  await prisma.employee.deleteMany();
+  const existingCount = await prisma.employee.count();
+  if (existingCount > 0) {
+    console.log(`   ${existingCount} profissionais já existem — pulando carga (use deleteMany manualmente se quiser recarregar)`);
+  } else {
+    const csvRaw = fs.readFileSync(HR_CSV, "utf-8");
+    const csv = Papa.parse<Record<string, string>>(csvRaw, { header: true, skipEmptyLines: true });
+    const predictions = loadPredictions();
 
-  let inserted = 0;
-  for (const r of csv.data) {
-    const employeeNumber = num(r.EmployeeNumber);
-    if (!employeeNumber) continue;
+    console.log(`   ${csv.data.length} registros no CSV`);
+    await prisma.employee.deleteMany();
 
-    const isActive = r.Attrition !== "Yes";
-    const pred = predictions.get(employeeNumber);
-    const riskScore = pred ? Math.round(pred.attritionProbability * 100) : null;
+    let inserted = 0;
+    for (const r of csv.data) {
+      const employeeNumber = num(r.EmployeeNumber);
+      if (!employeeNumber) continue;
 
-    await prisma.employee.create({
-      data: {
-        employeeNumber,
-        age: num(r.Age),
-        attrition: r.Attrition,
-        businessTravel: r.BusinessTravel,
-        dailyRate: num(r.DailyRate),
-        department: r.Department,
-        distanceFromHome: num(r.DistanceFromHome),
-        education: num(r.Education),
-        educationField: r.EducationField,
-        environmentSatisfaction: num(r.EnvironmentSatisfaction),
-        gender: r.Gender,
-        hourlyRate: num(r.HourlyRate),
-        jobInvolvement: num(r.JobInvolvement),
-        jobLevel: num(r.JobLevel),
-        jobRole: r.JobRole,
-        jobSatisfaction: num(r.JobSatisfaction),
-        maritalStatus: r.MaritalStatus,
-        monthlyIncome: num(r.MonthlyIncome),
-        monthlyRate: num(r.MonthlyRate),
-        numCompaniesWorked: num(r.NumCompaniesWorked),
-        over18: r.Over18,
-        overTime: r.OverTime,
-        percentSalaryHike: num(r.PercentSalaryHike),
-        performanceRating: num(r.PerformanceRating),
-        relationshipSatisfaction: num(r.RelationshipSatisfaction),
-        standardHours: num(r.StandardHours),
-        stockOptionLevel: num(r.StockOptionLevel),
-        totalWorkingYears: num(r.TotalWorkingYears),
-        trainingTimesLastYear: num(r.TrainingTimesLastYear),
-        workLifeBalance: num(r.WorkLifeBalance),
-        yearsAtCompany: num(r.YearsAtCompany),
-        yearsInCurrentRole: num(r.YearsInCurrentRole),
-        yearsSinceLastPromotion: num(r.YearsSinceLastPromotion),
-        yearsWithCurrManager: num(r.YearsWithCurrManager),
-        isActive,
-        attritionProbability: pred?.attritionProbability ?? null,
-        predictedAttrition: pred?.predictedAttrition ?? null,
-        riskScore,
-        riskLevel: riskScore !== null ? scoreToLevel(riskScore) : null,
-        topRiskFactors: pred?.topRiskFactors ?? null,
-        modelVersion: pred?.modelVersion ?? null,
-        scoredAt: pred ? new Date() : null,
-      },
-    });
-    inserted++;
-  }
-  console.log(`   ${inserted} profissionais inseridos`);
+      const isActive = r.Attrition !== "Yes";
+      const pred = predictions.get(employeeNumber);
+      const riskScore = pred ? Math.round(pred.attritionProbability * 100) : null;
+
+      await prisma.employee.create({
+        data: {
+          employeeNumber,
+          age: num(r.Age),
+          attrition: r.Attrition,
+          businessTravel: r.BusinessTravel,
+          dailyRate: num(r.DailyRate),
+          department: r.Department,
+          distanceFromHome: num(r.DistanceFromHome),
+          education: num(r.Education),
+          educationField: r.EducationField,
+          environmentSatisfaction: num(r.EnvironmentSatisfaction),
+          gender: r.Gender,
+          hourlyRate: num(r.HourlyRate),
+          jobInvolvement: num(r.JobInvolvement),
+          jobLevel: num(r.JobLevel),
+          jobRole: r.JobRole,
+          jobSatisfaction: num(r.JobSatisfaction),
+          maritalStatus: r.MaritalStatus,
+          monthlyIncome: num(r.MonthlyIncome),
+          monthlyRate: num(r.MonthlyRate),
+          numCompaniesWorked: num(r.NumCompaniesWorked),
+          over18: r.Over18,
+          overTime: r.OverTime,
+          percentSalaryHike: num(r.PercentSalaryHike),
+          performanceRating: num(r.PerformanceRating),
+          relationshipSatisfaction: num(r.RelationshipSatisfaction),
+          standardHours: num(r.StandardHours),
+          stockOptionLevel: num(r.StockOptionLevel),
+          totalWorkingYears: num(r.TotalWorkingYears),
+          trainingTimesLastYear: num(r.TrainingTimesLastYear),
+          workLifeBalance: num(r.WorkLifeBalance),
+          yearsAtCompany: num(r.YearsAtCompany),
+          yearsInCurrentRole: num(r.YearsInCurrentRole),
+          yearsSinceLastPromotion: num(r.YearsSinceLastPromotion),
+          yearsWithCurrManager: num(r.YearsWithCurrManager),
+          isActive,
+          attritionProbability: pred?.attritionProbability ?? null,
+          predictedAttrition: pred?.predictedAttrition ?? null,
+          riskScore,
+          riskLevel: riskScore !== null ? scoreToLevel(riskScore) : null,
+          topRiskFactors: pred?.topRiskFactors ?? null,
+          modelVersion: pred?.modelVersion ?? null,
+          scoredAt: pred ? new Date() : null,
+        },
+      });
+      inserted++;
+    }
+    console.log(`   ${inserted} profissionais inseridos`);
+  } // fim do else (employee vazio)
 
   // RiskConfig + ModelRun
   let modelVersion: string | null = null;

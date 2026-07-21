@@ -17,6 +17,7 @@ Projeto de **portfólio** que demonstra competência ponta a ponta em ciência d
 - [Modelo de Machine Learning](#modelo-de-machine-learning)
 - [Tratamento dos dados do CSV](#tratamento-dos-dados-do-csv)
 - [Como iniciar o projeto](#como-iniciar-o-projeto)
+- [Rotas de API](#rotas-de-api)
 - [Como testar](#como-testar)
 - [Documentação (MkDocs)](#documentação-mkdocs)
 - [Estrutura de diretórios](#estrutura-de-diretórios)
@@ -39,10 +40,10 @@ A base usada é o clássico **IBM HR Analytics** (1.470 profissionais, 35 coluna
 
 ## Demonstração
 
-Após iniciar o projeto:
+- **Local**: <http://localhost:3000>
+- **Online (Render)**: https://people-risk.onrender.com
 
-- URL: <http://localhost:3000>
-- **Acesso demo**: `demo123` / `demo123` (há um botão "Preencher automaticamente" na tela de login)
+**Acesso demo**: `demo123` / `demo123` (há um botão "Preencher automaticamente" na tela de login)
 
 Rotas principais:
 
@@ -104,8 +105,8 @@ Duas camadas separadas, comunicando-se via arquivo:
 - joblib (serialização)
 
 **Qualidade e docs**
-- Vitest + Testing Library (planejado)
-- pytest, Ruff, Pyright (planejado)
+- Vitest + Testing Library (estrutura criada, aguardando testes)
+- pytest, Ruff, Pyright (estrutura criada, aguardando testes)
 - **MkDocs + Material for MkDocs** (implementado)
 
 ## Modelo de Machine Learning
@@ -167,7 +168,7 @@ O modelo consegue **ranquear** bem os profissionais em risco (ROC-AUC ~0.80) e p
 
 ## Tratamento dos dados do CSV
 
-O `data/Human_Resources.csv` (fonte fixa do projeto) é tratado em três lugares distintos, cada um com responsabilidade clara:
+O `data/Human_Resources.csv` (fonte fixa do projeto, também presente na raiz como `Human_Resources.csv` para referência) é tratado em três lugares distintos, cada um com responsabilidade clara:
 
 ### 1. Pipeline de ML (Python)
 
@@ -237,8 +238,71 @@ NEXTAUTH_URL="http://localhost:3000"
 | `npm run dev`                                              | Sobe o app em modo desenvolvimento                           |
 | `npm run build && npm start`                               | Build de produção                                            |
 | `npx prisma db seed`                                       | Re-carrega o banco a partir do CSV + predictions.csv         |
+| `npm run db:seed`                                          | Atalho equivalente ao `npx prisma db seed`                   |
 | `npx prisma studio`                                        | GUI para inspecionar o SQLite                                |
 | `python -m analysis.scripts.generate_predictions`          | Re-treina o modelo e regenera as predições                   |
+| `docker build -t people-risk .`                           | Build da imagem Docker                                       |
+| `docker run -p 3000:3000 people-risk`                      | Executa o container localmente                               |
+
+### Rotas de API
+
+| Rota                          | Método | Descrição                                           |
+| ----------------------------- | ------ | --------------------------------------------------- |
+| `/api/auth/[...nextauth]`     | *      | Handler NextAuth (login, sessão, logout)            |
+| `/api/register`               | POST   | Cadastro de novo usuário                            |
+| `/api/employees`              | GET    | Lista de profissionais (filtros, paginação, busca)  |
+| `/api/dataset`                | GET    | Dataset completo paginado (todas as 35 colunas)     |
+| `/api/dataset/download`       | GET    | Download do CSV completo (attachment)               |
+| `/api/metrics`                | GET    | KPIs e agregações do dashboard                      |
+| `/api/insights`               | GET    | Insights executivos calculados a partir dos dados   |
+| `/api/model`                  | GET    | Métricas do modelo ativo (ModelRun)                 |
+| `/api/settings`               | GET/PUT| Leitura e gravação do RiskConfig                    |
+
+## Deploy no Render
+
+### Pré-requisitos
+
+- Conta no [Render](https://render.com) (GitHub login)
+- Repositório no GitHub com o projeto
+
+### Passo a passo (Docker — recomendado)
+
+1. **Crie um novo Web Service** no Render:
+   - Conecte seu repositório GitHub
+   - **Runtime**: Docker
+   - O Render detecta automaticamente o `Dockerfile` na raiz
+
+2. **Configure as variáveis de ambiente** no Render:
+
+   | Variável         | Valor                                                        |
+   | ---------------- | ------------------------------------------------------------ |
+   | `NEXTAUTH_URL`   | `https://people-risk.onrender.com` (substitua pelo seu domínio) |
+   | `NEXTAUTH_SECRET`| Gere um valor aleatório (Render pode gerar automaticamente)  |
+   | `DATABASE_URL`   | `file:./prisma/dev.db`                                       |
+
+3. **Deploy**: O Render detecta o push, faz o build da imagem Docker e executa o container.
+
+### Deploy via render.yaml (blueprint)
+
+O projeto inclui um `render.yaml` na raiz com runtime `docker`. Basta conectar o repositório no Render via **Blueprint** — tudo é configurado automaticamente.
+
+> ⚠️ **SQLite no Render free tier**:  
+> O banco SQLite é armazenado no disco local do container, que é **efêmero**. O dado é **resetado a cada novo deploy**.  
+> Para um portfólio isso é aceitável — o seed recarrega tudo automaticamente.  
+> Se precisar de persistência real, migre para PostgreSQL (ex.: Neon) e ajuste `DATABASE_URL`.
+
+### Docker local (opcional)
+
+```bash
+# Build da imagem
+docker build -t people-risk .
+
+# Executar
+docker run -p 3000:3000 \
+  -e NEXTAUTH_URL=http://localhost:3000 \
+  -e NEXTAUTH_SECRET=qualquer-secret-local \
+  people-risk
+```
 
 ## Como testar
 
@@ -254,17 +318,14 @@ Após subir o app:
 6. Em `/settings`, altere um threshold e observe a reclassificação (o app mostra quantos profissionais foram reclassificados).
 7. `/insights` deve gerar textos com números calculados a partir do banco.
 
-### Testes automatizados (planejado)
+### Testes automatizados
 
-A árvore prevê:
-
-- **Vitest** para lógica de `src/lib/risk`, `src/lib/metrics`, `src/lib/csv` e validações Zod.
-- **pytest** para o pacote `analysis/hr_analytics` (carga, features, treino smoke, avaliação, scoring).
+A árvore prevê diretórios de teste em `tests/` (Vitest) e `analysis/tests/` (pytest), aguardando implementação.
 
 Scripts esperados:
 
 ```bash
-npm run test        # roda os testes TS (quando implementados)
+npm run test        # roda os testes TS com Vitest
 npm run test:cov    # cobertura
 pytest              # testes Python
 ```
@@ -307,23 +368,39 @@ Recursos_Humanos/
 ├── analysis/               # Camada de ML (Python)
 │   ├── hr_analytics/       # Pacote: loading, features, train, evaluate, score
 │   ├── scripts/            # generate_predictions.py, train_model.py
-│   └── models/             # model_v1.joblib (gitignored) + metrics_v1.json
+│   ├── models/             # model_v1.joblib (gitignored) + metrics_v1.json
+│   └── reports/            # Curvas ROC/PR, matriz de confusão (PNG)
 ├── data/
-│   ├── Human_Resources.csv # Fonte fixa
+│   ├── Human_Resources.csv # Fonte fixa (cópia em data/)
 │   └── predictions.csv     # Gerado pelo ML
 ├── docs/                   # Documentação MkDocs
 ├── prisma/
 │   ├── schema.prisma       # User, Employee, RiskConfig, ModelRun
-│   └── seed.ts             # Carrega CSV + predições + usuário demo
+│   ├── seed.ts             # Carrega CSV + predições + usuário demo
+│   └── dev.db              # SQLite (gerado, gitignored)
+├── scripts/                # Scripts utilitários (em branco, reservado)
 ├── src/
 │   ├── app/                # App Router (marketing, auth, dashboard, api)
-│   ├── components/         # ui, layout, charts, settings
+│   ├── components/         # ui, layout, charts, dashboard, employees, dataset, marketing, settings
 │   ├── config/             # site.ts, constants
-│   ├── lib/                # prisma, auth, risk, utils, validations
+│   ├── lib/                # prisma.ts, auth, risk, utils, validations
 │   ├── server/services/    # metrics, model
+│   ├── hooks/              # Hooks React customizados
+│   ├── types/              # Tipos globais TypeScript
+│   ├── styles/             # Estilos adicionais
 │   └── middleware.ts       # Proteção de rotas
+├── tests/                  # Testes unitários e de integração (Vitest)
+│   ├── unit/               # risk, metrics, csv, validations
+│   ├── integration/        # api-employees, api-metrics, api-insights
+│   └── fixtures/           # sample_hr.csv para testes
+├── Dockerfile
+├── .dockerignore
 ├── mkdocs.yml
 ├── package.json
+├── tsconfig.json
+├── tailwind.config.ts
+├── next.config.ts
+├── .env.example
 └── README.md
 ```
 
