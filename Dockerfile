@@ -45,7 +45,11 @@ COPY --from=builder /app/analysis ./analysis
 COPY --from=builder /app/scripts/start-all.sh ./scripts/start-all.sh
 
 RUN apk add --no-cache python3 py3-pip
-RUN pip3 install --no-cache-dir -r analysis/requirements.txt
+ENV VIRTUAL_ENV=/opt/venv \
+    PATH="/opt/venv/bin:$PATH"
+RUN python3 -m venv "$VIRTUAL_ENV" && \
+    pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r analysis/requirements.txt
 RUN chmod +x scripts/start-all.sh
 
 EXPOSE 3000
