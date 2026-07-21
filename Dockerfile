@@ -4,7 +4,9 @@ WORKDIR /app
 # ── Deps de produção ──────────────────────────
 FROM base AS deps
 COPY package.json package-lock.json ./
-RUN npm ci --omit=dev && \
+RUN npm ci --omit=dev
+COPY prisma ./prisma
+RUN npx prisma generate && \
     cp -r node_modules /prod_node_modules
 
 # ── Build (dev deps inclusos) ─────────────────
