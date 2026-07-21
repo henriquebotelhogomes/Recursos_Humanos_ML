@@ -37,7 +37,7 @@ def choose_threshold(y_true: np.ndarray, y_proba: np.ndarray) -> float:
     best_f1 = -1.0
     for thr in candidates:
         preds = (y_proba >= thr).astype(int)
-        score = f1_score(y_true, preds, zero_division=0)
+        score = f1_score(y_true, preds)
         if score > best_f1:
             best_f1 = score
             best_thr = float(thr)
@@ -51,9 +51,9 @@ def evaluate(y_true: np.ndarray, y_proba: np.ndarray, threshold: float) -> Evalu
     return EvaluationResult(
         roc_auc=float(roc_auc_score(y_true, y_proba)),
         pr_auc=float(average_precision_score(y_true, y_proba)),
-        precision=float(precision_score(y_true, preds, zero_division=0)),
-        recall=float(recall_score(y_true, preds, zero_division=0)),
-        f1=float(f1_score(y_true, preds, zero_division=0)),
+        precision=float(precision_score(y_true, preds)),
+        recall=float(recall_score(y_true, preds)),
+        f1=float(f1_score(y_true, preds)),
         accuracy=accuracy,
         threshold=float(threshold),
         confusion=cm.tolist(),

@@ -2,7 +2,7 @@
 
 > Plataforma de RH que usa Machine Learning para prever, com antecedência, quais profissionais ativos têm maior risco de deixar a empresa, permitindo que RH e lideranças ajam preventivamente na retenção de talentos.
 
-Projeto de **portfólio** que demonstra competência ponta a ponta em ciência de dados/ML e engenharia de software full stack, defensável em entrevistas técnicas.
+Projeto de **portfólio** que demonstra competência ponta a ponta em ciência de dados/ML e engenharia de software full stack
 
 ![Stack](https://img.shields.io/badge/Next.js-15-000?logo=nextdotjs) ![TypeScript](https://img.shields.io/badge/TypeScript-5.7-3178C6?logo=typescript&logoColor=white) ![Prisma](https://img.shields.io/badge/Prisma-6-2D3748?logo=prisma) ![SQLite](https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite&logoColor=white) ![scikit--learn](https://img.shields.io/badge/scikit--learn-1.x-F7931E?logo=scikitlearn&logoColor=white) ![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)
 
@@ -38,6 +38,8 @@ O **PeopleRisk** transforma a base histórica de RH em sinais **acionáveis e pr
 
 A base usada é o clássico **IBM HR Analytics** (1.470 profissionais, 35 colunas), sintética e pública.
 
+![Landing Page](screenshots/landing_page.png)
+
 ## Demonstração
 
 - **Local**: <http://localhost:3000>
@@ -58,6 +60,8 @@ Rotas principais:
 | `/insights`         | Insights executivos gerados a partir dos dados                         |
 | `/dataset`          | Todas as 35 colunas do CSV, paginado (25/50/100/200/500/1000) + download |
 | `/settings`         | Ajuste dos thresholds de risco (reclassifica sem re-treinar)           |
+
+![Dashboard](screenshots/dashboard-1.png)
 
 ## Arquitetura
 
@@ -105,8 +109,10 @@ Duas camadas separadas, comunicando-se via arquivo:
 - joblib (serialização)
 
 **Qualidade e docs**
-- Vitest + Testing Library (estrutura criada, aguardando testes)
-- pytest, Ruff, Pyright (estrutura criada, aguardando testes)
+- Vitest (testes unitários em `tests/unit`)
+- pytest (testes da camada ML em `analysis/tests`)
+- Ruff (lint Python via `pyproject.toml`)
+- Pyright (type-check da camada Python via `pyrightconfig.json`)
 - **MkDocs + Material for MkDocs** (implementado)
 
 ## Modelo de Machine Learning
@@ -166,6 +172,8 @@ Modelo selecionado por CV: **LogisticRegression**
 
 O modelo consegue **ranquear** bem os profissionais em risco (ROC-AUC ~0.80) e prioriza **recall** para a classe minoritária — coerente com o negócio: prefere-se alertar demais e conversar do que perder um talento silenciosamente.
 
+![Painel do Modelo](screenshots/dashboard-2.png)
+
 ## Tratamento dos dados do CSV
 
 O `data/Human_Resources.csv` (fonte fixa do projeto, também presente na raiz como `Human_Resources.csv` para referência) é tratado em três lugares distintos, cada um com responsabilidade clara:
@@ -192,6 +200,14 @@ O `data/Human_Resources.csv` (fonte fixa do projeto, também presente na raiz co
 - Todas as leituras vêm do banco via **Prisma**; nenhuma agregação em memória a partir do CSV.
 - **KPIs de risco** consideram apenas ativos; **rotatividade histórica** usa a base inteira e é rotulada como tal.
 - `/dataset` mostra a base crua paginada e exporta CSV via `/api/dataset/download`.
+
+![Dataset](screenshots/dataset.png)
+
+![Insights](screenshots/insights.png)
+
+![Detalhe do Profissional](screenshots/profissional-1.png)
+
+![Configurações](screenshots/configuracoes.png)
 
 ## Como iniciar o projeto
 
@@ -258,39 +274,6 @@ NEXTAUTH_URL="http://localhost:3000"
 | `/api/model`                  | GET    | Métricas do modelo ativo (ModelRun)                 |
 | `/api/settings`               | GET/PUT| Leitura e gravação do RiskConfig                    |
 
-## Deploy no Render
-
-### Pré-requisitos
-
-- Conta no [Render](https://render.com) (GitHub login)
-- Repositório no GitHub com o projeto
-
-### Passo a passo (Docker — recomendado)
-
-1. **Crie um novo Web Service** no Render:
-   - Conecte seu repositório GitHub
-   - **Runtime**: Docker
-   - O Render detecta automaticamente o `Dockerfile` na raiz
-
-2. **Configure as variáveis de ambiente** no Render:
-
-   | Variável         | Valor                                                        |
-   | ---------------- | ------------------------------------------------------------ |
-   | `NEXTAUTH_URL`   | `https://people-risk.onrender.com` (substitua pelo seu domínio) |
-   | `NEXTAUTH_SECRET`| Gere um valor aleatório (Render pode gerar automaticamente)  |
-   | `DATABASE_URL`   | `file:./prisma/dev.db`                                       |
-
-3. **Deploy**: O Render detecta o push, faz o build da imagem Docker e executa o container.
-
-### Deploy via render.yaml (blueprint)
-
-O projeto inclui um `render.yaml` na raiz com runtime `docker`. Basta conectar o repositório no Render via **Blueprint** — tudo é configurado automaticamente.
-
-> ⚠️ **SQLite no Render free tier**:  
-> O banco SQLite é armazenado no disco local do container, que é **efêmero**. O dado é **resetado a cada novo deploy**.  
-> Para um portfólio isso é aceitável — o seed recarrega tudo automaticamente.  
-> Se precisar de persistência real, migre para PostgreSQL (ex.: Neon) e ajuste `DATABASE_URL`.
-
 ### Docker local (opcional)
 
 ```bash
@@ -320,9 +303,12 @@ Após subir o app:
 
 ### Testes automatizados
 
-A árvore prevê diretórios de teste em `tests/` (Vitest) e `analysis/tests/` (pytest), aguardando implementação.
+Suítes implementadas:
 
-Scripts esperados:
+- `tests/unit/` (Vitest): regras de risco, recomendações e validações Zod.
+- `analysis/tests/` (pytest): loading/cleaning, feature engineering e avaliação.
+
+Comandos:
 
 ```bash
 npm run test        # roda os testes TS com Vitest
@@ -360,6 +346,8 @@ Conteúdo:
 | `docs/data-pipeline.md`    | Fluxo CSV → predições → banco                            |
 | `docs/api.md`              | Referência das rotas de API                              |
 | `docs/contributing.md`     | Padrões de código e testes                               |
+
+![Documentação MkDocs](screenshots/mkdocs.png)
 
 ## Estrutura de diretórios
 
@@ -414,7 +402,7 @@ Recursos_Humanos/
 ### Roadmap (futuro)
 
 - **CI/CD** com GitHub Actions (lint + testes + build em push/PR) — planejado para quando houver repositório GitHub.
-- Testes automatizados (Vitest e pytest) implementados na íntegra.
+- Expandir cobertura para rotas de API e fluxos E2E.
 - Troca do explicador linear por `shap.LinearExplainer` / `shap.TreeExplainer` para gráficos SHAP nativos.
 - Serviço de inferência online (FastAPI) e re-treino agendado.
 

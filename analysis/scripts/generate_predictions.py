@@ -14,8 +14,10 @@ from __future__ import annotations
 import json
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import cast
 
 import joblib
+import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
 
@@ -42,6 +44,10 @@ def main() -> None:
     x_train, x_test, y_train, y_test = train_test_split(
         x, y, test_size=0.2, stratify=y, random_state=RANDOM_STATE
     )
+    x_train = cast(pd.DataFrame, x_train)
+    x_test = cast(pd.DataFrame, x_test)
+    y_train = cast(pd.Series, y_train)
+    y_test = cast(pd.Series, y_test)
 
     print(">> Treinando e selecionando o melhor modelo (ROC-AUC / CV)...")
     best_name, best_pipe, cv_scores = select_best_model(x_train, y_train)
@@ -49,9 +55,10 @@ def main() -> None:
     print("   Modelo selecionado:", best_name)
 
     print(">> Avaliando no holdout...")
-    proba_test = best_pipe.predict_proba(x_test)[:, 1]
-    threshold = choose_threshold(y_test.to_numpy(), proba_test)
-    result = evaluate(y_test.to_numpy(), proba_test, threshold)
+    proba_test = cast(np.ndarray, best_pipe.predict_proba(x_test)[:, 1])
+    y_test_np = cast(np.ndarray, y_test.to_numpy())
+    threshold = choose_threshold(y_test_np, proba_test)
+    result = evaluate(y_test_np, proba_test, threshold)
     print(
         "   ROC-AUC={:.4f} PR-AUC={:.4f} P={:.3f} R={:.3f} F1={:.3f} thr={:.2f}".format(
             result.roc_auc, result.pr_auc, result.precision, result.recall, result.f1, threshold

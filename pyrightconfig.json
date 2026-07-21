@@ -1,0 +1,10 @@
+{
+  "include": ["analysis"],
+  "exclude": [
+    "**/__pycache__",
+    "analysis/models",
+    "analysis/reports"
+  ],
+  "typeCheckingMode": "basic",
+  "pythonVersion": "3.12"
+}
