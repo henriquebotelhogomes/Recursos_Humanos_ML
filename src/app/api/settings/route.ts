@@ -4,7 +4,21 @@ import { auth } from "@/lib/auth/session";
 import { settingsSchema } from "@/lib/validations/settings.schema";
 import { scoreToLevel } from "@/lib/risk/risk-level";
 
-export async function POST(request: Request) {
+export async function GET() {
+  const session = await auth();
+  if (!session) {
+    return NextResponse.json({ error: { message: "Não autenticado", code: "UNAUTHORIZED" } }, { status: 401 });
+  }
+
+  const config = await prisma.riskConfig.findUnique({ where: { id: 1 } });
+  return NextResponse.json({
+    mediumRiskThreshold: config?.mediumRiskThreshold ?? 35,
+    highRiskThreshold: config?.highRiskThreshold ?? 60,
+    criticalRiskThreshold: config?.criticalRiskThreshold ?? 80,
+  });
+}
+
+async function updateSettings(request: Request) {
   const session = await auth();
   if (!session) {
     return NextResponse.json({ error: { message: "Não autenticado", code: "UNAUTHORIZED" } }, { status: 401 });
@@ -37,4 +51,12 @@ export async function POST(request: Request) {
   }
 
   return NextResponse.json({ ok: true, updated: employees.length });
+}
+
+export async function PUT(request: Request) {
+  return updateSettings(request);
+}
+
+export async function POST(request: Request) {
+  return updateSettings(request);
 }
