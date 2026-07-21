@@ -2,7 +2,7 @@
 
 > Plataforma de RH que usa Machine Learning para prever, com antecedência, quais profissionais ativos têm maior risco de deixar a empresa, permitindo que RH e lideranças ajam preventivamente na retenção de talentos.
 
-Projeto de **portfólio** que demonstra competência ponta a ponta em ciência de dados/ML e engenharia de software full stack
+Projeto de **portfólio** que demonstra entrega ponta a ponta em ciência de dados/ML e engenharia de software full stack, com foco em arquitetura, modelagem, APIs, qualidade e deploy.
 
 ![Stack](https://img.shields.io/badge/Next.js-15-000?logo=nextdotjs) ![TypeScript](https://img.shields.io/badge/TypeScript-5.7-3178C6?logo=typescript&logoColor=white) ![Prisma](https://img.shields.io/badge/Prisma-6-2D3748?logo=prisma) ![SQLite](https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite&logoColor=white) ![scikit--learn](https://img.shields.io/badge/scikit--learn-1.x-F7931E?logo=scikitlearn&logoColor=white) ![Python](https://img.shields.io/badge/Python-3.12-3776AB?logo=python&logoColor=white)
 
@@ -266,12 +266,9 @@ NEXTAUTH_URL="http://localhost:3000"
 | ----------------------------- | ------ | --------------------------------------------------- |
 | `/api/auth/[...nextauth]`     | *      | Handler NextAuth (login, sessão, logout)            |
 | `/api/register`               | POST   | Cadastro de novo usuário                            |
-| `/api/employees`              | GET    | Lista de profissionais (filtros, paginação, busca)  |
-| `/api/dataset`                | GET    | Dataset completo paginado (todas as 35 colunas)     |
+| `/api/employees`              | GET    | Lista de profissionais (filtros, paginação e busca) |
 | `/api/dataset/download`       | GET    | Download do CSV completo (attachment)               |
 | `/api/metrics`                | GET    | KPIs e agregações do dashboard                      |
-| `/api/insights`               | GET    | Insights executivos calculados a partir dos dados   |
-| `/api/model`                  | GET    | Métricas do modelo ativo (ModelRun)                 |
 | `/api/settings`               | GET/PUT| Leitura e gravação do RiskConfig                    |
 
 ### Docker local (opcional)
@@ -306,6 +303,7 @@ Após subir o app:
 Suítes implementadas:
 
 - `tests/unit/` (Vitest): regras de risco, recomendações e validações Zod.
+- `tests/integration/` (Vitest): rotas `/api/metrics`, `/api/settings` e `/api/employees`.
 - `analysis/tests/` (pytest): loading/cleaning, feature engineering e avaliação.
 
 Comandos:
@@ -332,7 +330,7 @@ mkdocs build       # saída em site/
 ```
 
 !!! tip "Por que a porta 8765?"
-    A porta padrão do MkDocs é a **8000**, mas no Windows ela costuma estar reservada pelo Hyper-V/WSL, causando `PermissionError: [WinError 10013]`. Deixamos a porta **8765** configurada em `mkdocs.yml` (`dev_addr`). Se quiser trocar, edite essa chave ou use `mkdocs serve --dev-addr 127.0.0.1:PORTA`.
+    A porta padrão do MkDocs é a **8000**. Em alguns ambientes Windows ela pode estar indisponível (por conflito de porta), então este projeto usa **127.0.0.1:8765** em `mkdocs.yml` (`dev_addr`). Se quiser trocar, edite `dev_addr` ou use `mkdocs serve --dev-addr 127.0.0.1:PORTA`.
 
 Conteúdo:
 
@@ -379,7 +377,7 @@ Recursos_Humanos/
 │   └── middleware.ts       # Proteção de rotas
 ├── tests/                  # Testes unitários e de integração (Vitest)
 │   ├── unit/               # risk, metrics, csv, validations
-│   ├── integration/        # api-employees, api-metrics, api-insights
+│   ├── integration/        # api-employees, api-metrics, api-settings
 │   └── fixtures/           # sample_hr.csv para testes
 ├── Dockerfile
 ├── .dockerignore
@@ -401,8 +399,8 @@ Recursos_Humanos/
 
 ### Roadmap (futuro)
 
-- **CI/CD** com GitHub Actions (lint + testes + build em push/PR) — planejado para quando houver repositório GitHub.
-- Expandir cobertura para rotas de API e fluxos E2E.
+- **CI/CD** com GitHub Actions implementado (`.github/workflows/ci.yml`) com lint, testes e build em push/PR.
+- Expandir cobertura para fluxos E2E (Playwright) e cenários de autenticação completos.
 - Troca do explicador linear por `shap.LinearExplainer` / `shap.TreeExplainer` para gráficos SHAP nativos.
 - Serviço de inferência online (FastAPI) e re-treino agendado.
 

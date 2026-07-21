@@ -78,9 +78,73 @@ content-disposition: attachment; filename="people_dataset.csv"
 
 **Exige sessão** (401 se não autenticado).
 
+## Métricas
+
+### `GET /api/metrics`
+
+Retorna os KPIs e agregações usados no dashboard.
+
+**Resposta (exemplo resumido):**
+
+```json
+{
+  "total": 1470,
+  "totalActive": 1233,
+  "attritionCount": 237,
+  "attritionRate": 16.12,
+  "atRiskActive": 184,
+  "byDepartment": [{ "name": "Sales", "saiu": 92, "ficou": 354 }]
+}
+```
+
+**Exige sessão** (401 se não autenticado).
+
+## Profissionais
+
+### `GET /api/employees`
+
+Lista profissionais com filtros e paginação.
+
+**Query params opcionais:**
+
+- `page` (default: `1`)
+- `pageSize` (default: `20`, max: `100`)
+- `status`: `active` | `former` | `all` (default: `active`)
+- `dept` (departamento)
+- `risk`: `LOW` | `MEDIUM` | `HIGH` | `CRITICAL`
+- `q` (número do profissional)
+
+**Resposta (exemplo resumido):**
+
+```json
+{
+  "page": 1,
+  "pageSize": 20,
+  "total": 312,
+  "totalPages": 16,
+  "data": [{ "id": 10, "employeeNumber": 1001, "riskLevel": "HIGH" }]
+}
+```
+
+**Exige sessão** (401 se não autenticado).
+
 ## Configurações
 
-### `POST /api/settings`
+### `GET /api/settings`
+
+Retorna os thresholds atuais de risco.
+
+**Resposta (exemplo):**
+
+```json
+{
+  "mediumRiskThreshold": 35,
+  "highRiskThreshold": 60,
+  "criticalRiskThreshold": 80
+}
+```
+
+### `PUT /api/settings`
 
 Atualiza os thresholds de risco e **reclassifica** todos os profissionais com score existente (sem re-treinar o modelo).
 
@@ -106,6 +170,8 @@ Atualiza os thresholds de risco e **reclassifica** todos os profissionais com sc
 ```
 
 O campo `updated` indica quantos `Employee` tiveram `riskLevel` reclassificado.
+
+> Compatibilidade: `POST /api/settings` também é aceito com o mesmo contrato do `PUT`.
 
 ## Rotas de página (server-rendered)
 
