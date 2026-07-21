@@ -437,7 +437,7 @@ Recursos_Humanos/
 - Ferramenta de **apoio à decisão** de RH, não deve ser usada isoladamente para decisões de desligamento.
 - Documentar sempre a análise de vieses (ex.: por gênero) no *model card* (`docs/risk-model.md`).
 
-### Roadmap (futuro)
+### Status do projeto
 
 - **CI/CD** com GitHub Actions implementado (`.github/workflows/ci.yml`) com lint, testes e build em push/PR.
 - Cobertura E2E (Playwright) e cenários de autenticação completos implementados.
