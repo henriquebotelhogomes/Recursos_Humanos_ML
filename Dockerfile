@@ -1,4 +1,4 @@
-FROM node:20-alpine AS base
+FROM node:20-slim AS base
 WORKDIR /app
 
 # ── Deps de produção ──────────────────────────
@@ -44,7 +44,9 @@ COPY --from=builder /app/analysis/models ./analysis/models
 COPY --from=builder /app/analysis ./analysis
 COPY --from=builder /app/scripts/start-all.sh ./scripts/start-all.sh
 
-RUN apk add --no-cache python3 py3-pip
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends python3 python3-venv python3-pip && \
+    rm -rf /var/lib/apt/lists/*
 ENV VIRTUAL_ENV=/opt/venv \
     PATH="/opt/venv/bin:$PATH"
 RUN python3 -m venv "$VIRTUAL_ENV" && \
