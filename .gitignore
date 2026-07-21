@@ -47,6 +47,8 @@ prisma/dev.db-journal
 coverage/
 .nyc_output/
 .vitest/
+playwright-report/
+test-results/
 
 # ─────────────────────────────────────────────
 # Python (camada de ML / análise)

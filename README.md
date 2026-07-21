@@ -1,5 +1,7 @@
 # PeopleRisk — People Analytics com Machine Learning
 
+[![CI](https://github.com/henriquebotelhogomes/Recursos_Humanos_ML/actions/workflows/ci.yml/badge.svg)](https://github.com/henriquebotelhogomes/Recursos_Humanos_ML/actions/workflows/ci.yml)
+
 > Plataforma de RH que usa Machine Learning para prever, com antecedência, quais profissionais ativos têm maior risco de deixar a empresa, permitindo que RH e lideranças ajam preventivamente na retenção de talentos.
 
 Projeto de **portfólio** que demonstra entrega ponta a ponta em ciência de dados/ML e engenharia de software full stack, com foco em arquitetura, modelagem, APIs, qualidade e deploy.
@@ -111,6 +113,7 @@ Duas camadas separadas, comunicando-se via arquivo:
 **Qualidade e docs**
 - Vitest (testes unitários em `tests/unit`)
 - pytest (testes da camada ML em `analysis/tests`)
+- Playwright (fluxos E2E em `tests/e2e`)
 - Ruff (lint Python via `pyproject.toml`)
 - Pyright (type-check da camada Python via `pyrightconfig.json`)
 - **MkDocs + Material for MkDocs** (implementado)
@@ -304,6 +307,7 @@ Suítes implementadas:
 
 - `tests/unit/` (Vitest): regras de risco, recomendações e validações Zod.
 - `tests/integration/` (Vitest): rotas `/api/metrics`, `/api/settings` e `/api/employees`.
+- `tests/e2e/` (Playwright): autenticação ponta a ponta (rota protegida, login válido/inválido, cadastro com auto-login, logout) e fluxos protegidos (`/employees`, `/dataset`, `/insights`, `/settings`).
 - `analysis/tests/` (pytest): loading/cleaning, feature engineering e avaliação.
 
 Comandos:
@@ -311,8 +315,20 @@ Comandos:
 ```bash
 npm run test        # roda os testes TS com Vitest
 npm run test:cov    # cobertura
+npm run test:e2e    # fluxos E2E com Playwright
 pytest              # testes Python
 ```
+
+### Cobertura de testes (TypeScript)
+
+A cobertura dos testes TypeScript roda no CI com `npm run test:cov`.
+
+Referência local do último run:
+
+- Statements: **68.71%**
+- Branches: **44.57%**
+- Functions: **24.44%**
+- Lines: **11.51%**
 
 ## Documentação (MkDocs)
 
@@ -400,7 +416,7 @@ Recursos_Humanos/
 ### Roadmap (futuro)
 
 - **CI/CD** com GitHub Actions implementado (`.github/workflows/ci.yml`) com lint, testes e build em push/PR.
-- Expandir cobertura para fluxos E2E (Playwright) e cenários de autenticação completos.
+- Cobertura E2E (Playwright) e cenários de autenticação completos implementados.
 - Troca do explicador linear por `shap.LinearExplainer` / `shap.TreeExplainer` para gráficos SHAP nativos.
 - Serviço de inferência online (FastAPI) e re-treino agendado.
 
