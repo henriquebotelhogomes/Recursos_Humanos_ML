@@ -19,7 +19,12 @@ from analysis.inference.schemas import (
 )
 
 ROOT = Path(__file__).resolve().parents[2]
-MODEL_PATH = Path(os.getenv("MODEL_PATH", str(ROOT / "analysis" / "models" / f"model_{MODEL_VERSION}.joblib")))
+MODEL_PATH = Path(
+    os.getenv(
+        "MODEL_PATH",
+        str(ROOT / "analysis" / "models" / f"model_{MODEL_VERSION}.joblib"),
+    )
+)
 INFERENCE_API_KEY = os.getenv("INFERENCE_API_KEY", "")
 
 APP_TO_MODEL_COLUMNS = {
@@ -100,7 +105,11 @@ def health() -> dict[str, str]:
     return {"status": "ok"}
 
 
-@app.get("/model-info", response_model=ModelInfoResponse, dependencies=[Depends(_require_api_key)])
+@app.get(
+    "/model-info",
+    response_model=ModelInfoResponse,
+    dependencies=[Depends(_require_api_key)],
+)
 def model_info() -> ModelInfoResponse:
     return ModelInfoResponse(modelVersion=MODEL_VERSION, modelPath=str(MODEL_PATH))
 
@@ -126,12 +135,20 @@ def _predict(employees: list[EmployeeFeatures]) -> list[PredictResponse]:
     return data
 
 
-@app.post("/predict", response_model=PredictResponse, dependencies=[Depends(_require_api_key)])
+@app.post(
+    "/predict",
+    response_model=PredictResponse,
+    dependencies=[Depends(_require_api_key)],
+)
 def predict(payload: PredictRequest) -> PredictResponse:
     return _predict([payload.employee])[0]
 
 
-@app.post("/predict/batch", response_model=PredictBatchResponse, dependencies=[Depends(_require_api_key)])
+@app.post(
+    "/predict/batch",
+    response_model=PredictBatchResponse,
+    dependencies=[Depends(_require_api_key)],
+)
 def predict_batch(payload: PredictBatchRequest) -> PredictBatchResponse:
     if not payload.employees:
         raise HTTPException(status_code=422, detail="employees cannot be empty")

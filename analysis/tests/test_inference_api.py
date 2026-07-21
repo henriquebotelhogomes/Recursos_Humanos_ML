@@ -64,6 +64,9 @@ def test_predict_and_batch() -> None:
     assert data["riskScore"] == 80
     assert data["riskLevel"] == "CRITICAL"
 
-    batch = client.post("/predict/batch", json={"employees": [_sample_employee(), _sample_employee()]})
+    batch = client.post(
+        "/predict/batch",
+        json={"employees": [_sample_employee(), _sample_employee()]},
+    )
     assert batch.status_code == 200
     assert len(batch.json()["data"]) == 2

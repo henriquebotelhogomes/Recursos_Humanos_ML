@@ -3,10 +3,9 @@ from __future__ import annotations
 import pandas as pd
 import pytest
 
-from analysis.hr_analytics.features import split_features_target
 from analysis.hr_analytics import score
+from analysis.hr_analytics.features import split_features_target
 from analysis.hr_analytics.train import build_models
-
 
 pytestmark = pytest.mark.skipif(
     score.shap is None,

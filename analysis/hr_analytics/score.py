@@ -88,7 +88,9 @@ def _build_shap_explainer(
     return shap.Explainer(clf, background)
 
 
-def explain_with_shap(model: Pipeline, x: pd.DataFrame) -> tuple[np.ndarray, list[str], pd.DataFrame]:
+def explain_with_shap(
+    model: Pipeline, x: pd.DataFrame
+) -> tuple[np.ndarray, list[str], pd.DataFrame]:
     """Calcula SHAP values do pipeline final e retorna matriz + nomes das features."""
     if shap is None:
         raise RuntimeError("Pacote 'shap' indisponível") from SHAP_IMPORT_ERROR
@@ -144,7 +146,13 @@ def save_shap_reports(
     bar_path = f"{reports_dir}/shap_summary_bar_{model_version}.png"
     beeswarm_path = f"{reports_dir}/shap_beeswarm_{model_version}.png"
 
-    shap.summary_plot(shap_values, transformed_df, plot_type="bar", show=False, max_display=15)
+    shap.summary_plot(
+        shap_values,
+        transformed_df,
+        plot_type="bar",
+        show=False,
+        max_display=15,
+    )
     plt.tight_layout()
     plt.savefig(bar_path, dpi=160)
     plt.close()
